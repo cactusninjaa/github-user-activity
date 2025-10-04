@@ -14,10 +14,28 @@ program
 program.command('user-events')
   .description('List user events')
   .argument('<username>', 'Username to fetch')
-  .action(async (username) => {
+  .option('-p, --payload', 'Get the payload of the events')
+  .option('--number', 'only display events\'s number')
+  .action(async (username, option) => {
     try {
       const events = await getUserEvents(username);
-      console.log(events);
+      if (option.number){
+        console.log(`\x1b[32m${username}\x1b[0m made \x1b[32m${events.length}\x1b[0m events`);
+      } else {
+        events.map((event) => {
+          const date = new Date (event.created_at).toDateString();
+          const repoName = event.repo.name;
+          const type = event.type;
+          const payload = JSON.stringify(event.payload, null, 2);
+          
+          console.log('');
+          console.log(`\x1b[32m${type} on ${repoName} at ${date}\x1b[0m`);
+          if (option.payload){
+            console.log('');
+            console.log(`\x1b[34mWith payload\x1b[0m : ${payload}`);
+          };
+        });
+      };
     } catch (err) {
       console.error('Error:', err.message);
     }
